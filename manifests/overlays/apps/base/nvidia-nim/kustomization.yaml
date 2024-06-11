@@ -4,12 +4,4 @@ commonLabels:
   app: odh-dashboard
   app.kubernetes.io/part-of: odh-dashboard
 resources:
-  - ../../../apps
-  - ./aikit
-  - ./anaconda-ce
-  - ./elastic
-  - ./openvino
-  - ./pachyderm
-  - ./watson-x
-  - ./rhoai
-  - ./nvidia-nim
+- nvidia-nim-app.yaml
