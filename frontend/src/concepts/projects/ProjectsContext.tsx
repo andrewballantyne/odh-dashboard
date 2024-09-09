@@ -4,6 +4,7 @@ import { FetchState } from '~/utilities/useFetchState';
 import { KnownLabels, ProjectKind } from '~/k8sTypes';
 import { useDashboardNamespace } from '~/redux/selectors';
 import { getDisplayNameFromK8sResource } from '~/concepts/k8s/utils';
+import { filterProjects } from '~/components/FavoriteButton';
 import { isAvailableProject } from './utils';
 
 const projectSorter = (projectA: ProjectKind, projectB: ProjectKind) =>
@@ -121,6 +122,9 @@ const ProjectsContextProvider: React.FC<ProjectsProviderProps> = ({ children }) 
       projects: projects.toSorted(projectSorter),
       modelServingProjects: modelServingProjects.toSorted(projectSorter),
       nonActiveProjects: nonActiveProjects.toSorted(projectSorter),
+      // projects: projects.toSorted(filterProjects),
+      // modelServingProjects: modelServingProjects.toSorted(filterProjects),
+      // nonActiveProjects: nonActiveProjects.toSorted(filterProjects),
       preferredProject,
       updatePreferredProject: setPreferredProject,
       loaded,

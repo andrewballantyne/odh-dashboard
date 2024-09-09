@@ -1,5 +1,15 @@
 import * as React from 'react';
-import { Button, Spinner, Text, TextVariants, Timestamp } from '@patternfly/react-core';
+import {
+  Button,
+  Flex,
+  FlexItem,
+  Spinner,
+  Split,
+  SplitItem,
+  Text,
+  TextVariants,
+  Timestamp,
+} from '@patternfly/react-core';
 import { ActionsColumn, Td, Tr } from '@patternfly/react-table';
 import { useNavigate } from 'react-router-dom';
 import { ProjectKind } from '~/k8sTypes';
@@ -11,7 +21,10 @@ import NotebookRouteLink from '~/pages/projects/notebook/NotebookRouteLink';
 import CanEnableElyraPipelinesCheck from '~/concepts/pipelines/elyra/CanEnableElyraPipelinesCheck';
 import NotebookStateStatus from '~/pages/projects/screens/projects/NotebookStateStatus';
 import { getDisplayNameFromK8sResource } from '~/concepts/k8s/utils';
+import FavoriteButton from '~/components/FavoriteButton';
 import ProjectLink from './ProjectLink';
+
+const favourites = ['andrews-test', 'dsa', 'test123'];
 
 type ProjectTableRowProps = {
   obj: ProjectKind;
@@ -47,10 +60,20 @@ const ProjectTableRow: React.FC<ProjectTableRowProps> = ({
             >
               {index === 0 ? (
                 <Td dataLabel="Name" rowSpan={notebookStates.length || 1}>
-                  <ResourceNameTooltip resource={project}>
-                    <ProjectLink project={project} />
-                  </ResourceNameTooltip>
-                  {owner && <Text component={TextVariants.small}>{owner}</Text>}
+                  <Flex>
+                    <FlexItem spacer={{ default: 'spacerSm' }}>
+                      <FavoriteButton
+                        isFavorite={favourites.includes(project.metadata.name)}
+                        onClick={() => {}}
+                      />
+                    </FlexItem>
+                    <FlexItem>
+                      <ResourceNameTooltip resource={project}>
+                        <ProjectLink project={project} />
+                      </ResourceNameTooltip>
+                      {owner && <Text component={TextVariants.small}>{owner}</Text>}
+                    </FlexItem>
+                  </Flex>
                 </Td>
               ) : null}
               {index === 0 ? (

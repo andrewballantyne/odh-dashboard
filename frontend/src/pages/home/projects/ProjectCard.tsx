@@ -21,6 +21,7 @@ import TypeBorderedCard from '~/concepts/design/TypeBorderedCard';
 import { getProjectOwner } from '~/concepts/projects/utils';
 import { fireLinkTrackingEvent } from '~/concepts/analyticsTracking/segmentIOUtils';
 import { getDescriptionFromK8sResource, getDisplayNameFromK8sResource } from '~/concepts/k8s/utils';
+import FavoriteButton, { isFavourite } from '~/components/FavoriteButton';
 
 interface ProjectCardProps {
   project: ProjectKind;
@@ -29,9 +30,11 @@ interface ProjectCardProps {
 const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => {
   const navigate = useNavigate();
 
+  const actions = <FavoriteButton isFavorite={isFavourite(project.metadata.name)} />;
+
   return (
     <TypeBorderedCard key={project.metadata.uid} sectionType={SectionType.organize}>
-      <CardHeader>
+      <CardHeader actions={{ actions }}>
         <Button
           data-testid={`project-link-${project.metadata.name}`}
           variant="link"
