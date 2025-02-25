@@ -1,9 +1,11 @@
 import React from 'react';
 import { Switch } from '@patternfly/react-core';
+import { CheckIcon } from '@patternfly/react-icons';
 import useNotification from '~/utilities/useNotification';
-import { toggleHardwareProfileEnablement } from '~/api';
+import { HardwareProfileModel, toggleHardwareProfileEnablement } from '~/api';
 import { HardwareProfileKind } from '~/k8sTypes';
 import { HardwareProfileWarningType } from '~/concepts/hardwareProfiles/types';
+import { AccessAllowed, useAccessAllowed, verbModelAccess } from '~/concepts/userSSAR';
 import { validateProfileWarning } from './utils';
 
 type HardwareProfileEnableToggleProps = {
@@ -40,14 +42,21 @@ const HardwareProfileEnableToggle: React.FC<HardwareProfileEnableToggleProps> = 
   };
 
   return (
-    <Switch
-      aria-label={enabled ? 'enabled' : 'stopped'}
-      data-testid="enable-switch"
-      id={`${hardwareProfile.metadata.name}-enable-switch`}
-      isChecked={enabled && !warning}
-      isDisabled={warning || isLoading}
-      onChange={(_e, checked) => handleChange(checked)}
-    />
+    <AccessAllowed
+      resourceAttributes={verbModelAccess('patch', HardwareProfileModel)}
+      noAccessRender={() => enabled && !warning && <CheckIcon />}
+    >
+      {() => (
+        <Switch
+          aria-label={enabled ? 'enabled' : 'stopped'}
+          data-testid="enable-switch"
+          id={`${hardwareProfile.metadata.name}-enable-switch`}
+          isChecked={enabled && !warning}
+          isDisabled={warning || isLoading}
+          onChange={(_e, checked) => handleChange(checked)}
+        />
+      )}
+    </AccessAllowed>
   );
 };
 
