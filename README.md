@@ -1,7 +1,3 @@
-<!--
-
--->
-
 # Today's Connection Logic
 
 ## Workbenches
@@ -10,10 +6,8 @@
 sequenceDiagram
     actor U as End User
     participant C as Connection
-    box submission side
     participant K8s as Kubernetes
     participant webhook as Mutating Webhook
-    end
 
     U->>C: Create Connection (OCI, S3, or URI)
     U->>K8s: Create Notebook
@@ -28,22 +22,20 @@ sequenceDiagram
 sequenceDiagram
     actor U as End User
     participant C as Connection
-    box submission side
     participant K8s as Kubernetes
     participant webhook as Mutating Webhook
-    end
 
     U->>C: Create "OCI" Connection
     U->>K8s: Create InferenceService
     Note left of K8s: "Dashboard" storageUri: oci://path/for:model
     K8s->>webhook: Convert annotation into proper K8s fields
-    Note right of webhook: "API" imagePullSecret: <connection secret>
+    Note right of webhook: "API" imagePullSecret: <connection-secret-name>
     webhook->>K8s: Store in Kubernetes
 
     U->>C: Create "URI" Connection
     U->>K8s: Create isvc with Connection annotation
     K8s->>webhook: Convert annotation into proper K8s fields
-    Note right of webhook: "API" storageUri: <uri value here>
+    Note right of webhook: "API" storageUri: <uri-value-here>
     webhook->>K8s: Store in Kubernetes
 
     U->>C: Create "S3" Connection
@@ -54,35 +46,37 @@ sequenceDiagram
     webhook->>K8s: Store in Kubernetes
 ```
 
-<!--```mermaid
-    actor A as Admin User
-    participant CT as Connection Type
-    participant C as Connection
-    box submission side
-    participant K8s as Kubernetes
-    participant webhook as Mutating Webhook
-    end
+### Technical Details - 3.0
 
+Notebook side
 
-```-->
+* `opendatahub.io/connections: "<connection-secret-name>"`
+  * Mount as env var
+* `opendatahub.io/connection-type-method: "<value>"`
+  * Ignored
 
-<!--
-```mermaid
-    actor EndUser as End User
-    participant DashboardUI as Dashboard UI (Browser)
-    box Dashboard Pod
-    participant OAuth as OAuth Proxy Container
-    participant Dashboard as Dashboard Container
-    end
+Model Side
+* `opendatahub.io/connections: "<connection-secret-name>"`
+  * Hookup for the mutating webhook to kick in
+* `opendatahub.io/connection-type-method: "<value>"`
+  * OCI -- Connects via OCI logic (`imagePullSecret`)
+  * URI -- Connects via URI logic (`storageUri`)
+  * S3
+    * `Kind: InferenceService` -- connects via `storage.key` & `storage.path`
+    * `Kind: LLMInferenceService` -- connects via `model.uri` with `s3://` protocol
+      * This needs SA support
+  * _something else_
+    * Reject?
+  * _missing_
+    * ??? Support URI?
 
-    EndUser->>DashboardUI: https://dashboard-route/*
-    DashboardUI-xOAuth: (Not logged in)
-    OAuth-\->>DashboardUI: Return log in screen
-    EndUser->>DashboardUI: (log in)
-    DashboardUI->>OAuth: (successful log in)
-    OAuth->>Dashboard: Redirect to Dashboard
-    Dashboard->>OAuth: Return HTML Page
-    OAuth->>DashboardUI: (forwarded)<br/>Return HTML Page
+### Technical Details - 3.1+
 
-```
--->
+* Support for good separation
+  * `opendatahub.io/connection-path: "<model-path>"`
+    * S3 -- path inside bucket
+      * OLD way -- put into `storage.path`
+      * NEW way -- put into `s3://bucket/{path}`
+    * OCI -- full qualified OCI (aka URI) path `oci://path/for:model`
+* Dashboard "plays no more role" in connections being "connected"
+  * This gets away from the two source problem
