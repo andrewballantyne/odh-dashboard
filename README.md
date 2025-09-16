@@ -1,28 +1,41 @@
-[Dev setup & Requirements]: docs/dev-setup.md
-[Dashboard documentation]: docs/README.md
-[contributing guidelines]: CONTRIBUTING.md
-[issue]: https://github.com/opendatahub-io/odh-dashboard/issues/new/choose
-[definition of ready]: docs/definition-of-ready.md
+<!--
+participant CT as Connection Type
 
-# Open Data Hub Dashboard [![codecov](https://codecov.io/gh/opendatahub-io/odh-dashboard/graph/badge.svg)](https://codecov.io/gh/opendatahub-io/odh-dashboard)
+-->
 
-A dashboard for Open Data Hub components, featuring user flows to navigate and interact with the various component parts of the stack.
+```mermaid
+sequenceDiagram
+    actor U as End User
+    participant C as Connection
+    box submission side
+    participant K8s as Kubernetes
+    participant webhook as Mutating Webhook
+    end
 
-## Contributing
+    U->>C: Create Connection
+    U->>K8s: Create workload with Connection annotation
+    K8s->>webhook: Convert annotation into proper K8s
+    webhook->>K8s: Store in Kubernetes
 
-Individual bug fixes are welcome, it is recommended that you create a bug [issue] at the same time to describe the fix you're applying. If you are unsure how best to solve it, start with the issue and note your desire to contribute.
+```
 
-Large feature implementations will need to go through our internal [definition of ready] to make sure we align with the wider architectural design. 
+<!--
+```mermaid
+    actor EndUser as End User
+    participant DashboardUI as Dashboard UI (Browser)
+    box Dashboard Pod
+    participant OAuth as OAuth Proxy Container
+    participant Dashboard as Dashboard Container
+    end
 
-To start a conversation on implementing a feature for the Dashboard, open up a feature request [issue].
+    EndUser->>DashboardUI: https://dashboard-route/*
+    DashboardUI-xOAuth: (Not logged in)
+    OAuth-\->>DashboardUI: Return log in screen
+    EndUser->>DashboardUI: (log in)
+    DashboardUI->>OAuth: (successful log in)
+    OAuth->>Dashboard: Redirect to Dashboard
+    Dashboard->>OAuth: Return HTML Page
+    OAuth->>DashboardUI: (forwarded)<br/>Return HTML Page
 
-We also have some [contributing guidelines] you can follow.
-
-## Documentation
-
-To get the current commit hash from the UI, to confirm which code is deployed, the commit hash is printed to the console every time the About Dialog is opened.
-
-Read more about the Dashboard in one of our documentation links.
-
-* [Dev setup & Requirements]
-* [Dashboard documentation]
+```
+-->
