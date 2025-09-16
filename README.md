@@ -33,12 +33,6 @@ sequenceDiagram
     participant webhook as Mutating Webhook
     end
 
-    U->>C: Create Connection (OCI, S3, or URI)
-    U->>K8s: Create Notebook
-    K8s->>webhook: Convert annotation into proper K8s fields
-    Note right of webhook: "API" <mount as env var>
-    webhook->>K8s: Store in Kubernetes
-
     U->>C: Create "OCI" Connection
     U->>K8s: Create InferenceService
     Note left of K8s: "Dashboard" storageUri: oci://path/for:model
