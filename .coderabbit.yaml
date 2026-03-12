@@ -1,0 +1,88 @@
+language: "en-US"
+early_access: false
+reviews:
+  profile: "chill"
+  request_changes_workflow: false
+  high_level_summary: true
+  poem: false
+  review_status: true
+  collapse_walkthrough: false
+  auto_review:
+    enabled: true
+    drafts: false
+  tools:
+    shellcheck:
+      enabled: true
+    yamllint:
+      enabled: true
+    markdownlint:
+      enabled: true
+
+chat:
+  auto_reply: true
+
+# Feature Flag Detection Rules
+checks:
+  - name: "Feature Flag - Code-level Only (Dev Mode)"
+    description: "Detect when feature flags are added to code but not CRD"
+    pattern:
+      files:
+        - "backend/src/utils/constants.ts"
+      not_files:
+        - "manifests/common/crd/odhdashboardconfigs.opendatahub.io.crd.yaml"
+    message: |
+      ⚠️ **Feature Flag Added - Development Mode**
+
+      You've added a feature flag to the code-level location (`/backend/src/utils/constants.ts`) but not to the CRD.
+
+      **This is fine for development**, but be aware:
+      - ✅ Appropriate for in-progress features
+      - ⚠️ This feature **CANNOT be released** to customers until the CRD is updated
+      - 💡 Only add the CRD entry when the feature is complete and ready for customer use
+
+      **When you're ready for release:**
+      - Add the flag to `/manifests/common/crd/odhdashboardconfigs.opendatahub.io.crd.yaml` in the `dashboardConfig` section
+      - Use format: `<featureFlagName>` (NOT "disabled" prefix)
+      - Notify documentation team to document the flag
+
+      See [FEATURE_FLAGS.md](./FEATURE_FLAGS.md) for full guidelines.
+
+  - name: "Feature Flag - Customer-Ready (Both Locations)"
+    description: "Detect when feature flags are added to both code and CRD"
+    pattern:
+      files:
+        - "backend/src/utils/constants.ts"
+        - "manifests/common/crd/odhdashboardconfigs.opendatahub.io.crd.yaml"
+    message: |
+      🚀 **Feature Flag Added - Customer-Facing Feature**
+
+      You've added a feature flag to both code and CRD. This feature is now **customer-facing**.
+
+      **Pre-Release Checklist:**
+      - [ ] Feature is **complete and tested** (not in broken/incomplete state)
+      - [ ] Feature maturity level determined:
+        - **DP/TP**: MUST be disabled by default (non-negotiable)
+        - **GA**: Should have flag if it's new routes/pages/major functionality
+      - [ ] Flag is in `dashboardConfig` section of OdhDashboardConfig
+      - [ ] Flag name uses format `<featureFlagName>` (NOT "disabled" prefix)
+      - [ ] Documentation team notified to document what this flag does
+
+      **⚠️ Important:** Adding CRD flags prematurely allows customers to enable incomplete features. Only add CRD entries when truly ready for release.
+
+      See [FEATURE_FLAGS.md](./FEATURE_FLAGS.md) for full guidelines.
+
+  - name: "Feature Flag - Deprecated Naming"
+    description: "Detect usage of deprecated 'disabled' prefix in feature flags"
+    pattern:
+      regex: 'disabled[A-Z][a-zA-Z]*'
+      files:
+        - "backend/src/utils/constants.ts"
+        - "manifests/common/crd/odhdashboardconfigs.opendatahub.io.crd.yaml"
+    message: |
+      ❌ **Deprecated Feature Flag Naming Pattern**
+
+      The "disabled" prefix pattern (e.g., `disabledFeatureName`) is **no longer supported**.
+
+      **Use instead:** `featureFlagName` format in the `dashboardConfig` section.
+
+      See [FEATURE_FLAGS.md](./FEATURE_FLAGS.md) for naming conventions.
